@@ -18,6 +18,44 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   int notificationCount = 3;
   String currentDateTime = "";
+  int _selectedIndex = 0; // For bottom nav
+
+  // ✅ Sample today’s classes data
+  final List<Map<String, dynamic>> todaysClasses = [
+    {
+      'class': 'Computer Science 101',
+      'code': 'CS101',
+      'lecturer': 'Dr. Sarah Johnson',
+      'time': '10:00 - 11:30 AM',
+      'room': 'A101',
+      'enrolled': 45,
+      'present': 38,
+      'attendance': 84,
+      'status': 'In Progress',
+    },
+    {
+      'class': 'Mathematics 201',
+      'code': 'MATH201',
+      'lecturer': 'Prof. Michael Chen',
+      'time': '2:00 - 3:30 PM',
+      'room': 'B205',
+      'enrolled': 32,
+      'present': 0,
+      'attendance': null,
+      'status': 'Scheduled',
+    },
+    {
+      'class': 'Physics 301',
+      'code': 'PHY301',
+      'lecturer': 'Dr. Emma Williams',
+      'time': '8:00 - 9:30 AM',
+      'room': 'C102',
+      'enrolled': 28,
+      'present': 26,
+      'attendance': 93,
+      'status': 'Completed',
+    },
+  ];
 
   @override
   void initState() {
@@ -37,65 +75,108 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     });
   }
 
+  // ✅ Bottom nav tap handler
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        _showSnack("Add New Student clicked");
+        break;
+      case 1:
+        _showSnack("Create New Class clicked");
+        break;
+      case 2:
+        _showSnack("Generate Report clicked");
+        break;
+      case 3:
+        _showSnack("System Setting clicked");
+        break;
+    }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.deepPurple),
-              child: Text(
-                'Smart Attendance\nManagement System',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: <Widget>[
+                  const DrawerHeader(
+                    decoration: BoxDecoration(color: Colors.deepPurple),
+                    child: Text(
+                      'Smart Attendance\nManagement System',
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.dashboard,
+                    text: 'Dashboard',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.people,
+                    text: 'Students',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person,
+                    text: 'Lecturers',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.class_,
+                    text: 'Classes',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.check_circle,
+                    text: 'Attendance',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.school,
+                    text: 'Exam Eligibility',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.memory,
+                    text: 'Hardware Status',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.bar_chart,
+                    text: 'Reports',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.settings,
+                    text: 'Settings',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ],
               ),
             ),
-            _buildDrawerItem(
-              icon: Icons.dashboard,
-              text: 'Dashboard',
-              onTap: () => Navigator.pop(context),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _showLogoutDialog();
+              },
             ),
-            _buildDrawerItem(
-              icon: Icons.people,
-              text: 'Students',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.person,
-              text: 'Lecturers',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.class_,
-              text: 'Classes',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.check_circle,
-              text: 'Attendance',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.school,
-              text: 'Exam Eligibility',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.memory,
-              text: 'Hardware Status',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.bar_chart,
-              text: 'Reports',
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.settings,
-              text: 'Settings',
-              onTap: () => Navigator.pop(context),
-            ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -111,7 +192,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Left: Menu + Welcome
                 Row(
                   children: [
                     Builder(
@@ -131,26 +211,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     ),
                   ],
                 ),
-
-                // Center: Date & Time
                 Text(
                   currentDateTime,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
-
-                // Right: Notifications + Profile
                 Row(
                   children: [
                     Stack(
                       children: [
                         IconButton(
-                          icon: const Icon(
-                            Icons.notifications,
-                            color: Colors.white,
-                          ),
+                          icon: const Icon(Icons.notifications,
+                              color: Colors.white),
                           onPressed: () {
                             setState(() {
-                              notificationCount = 0; // Clear notifications
+                              notificationCount = 0;
                             });
                           },
                         ),
@@ -197,10 +271,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   children: [
                     const Text(
                       'Overview',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     GridView.count(
@@ -224,8 +296,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         ),
                         _buildDashboardCard(
                           title: 'Exam Eligibility',
-                          value:
-                              '${currentEligibilityRate.toStringAsFixed(1)}%',
+                          value: '${currentEligibilityRate.toStringAsFixed(1)}%',
                           icon: Icons.school,
                           color: Colors.amber.shade300,
                         ),
@@ -240,17 +311,58 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     const SizedBox(height: 24),
                     const Text(
                       'Live Attendance Feed',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     _buildLiveFeedCard(),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Hardware Status',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildHardwareStatusCard(),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Today’s Classes Overview',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTodaysClassesCard(),
                   ],
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+
+      // ✅ Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_add),
+            label: "Add Student",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.class_),
+            label: "New Class",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: "Report",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
           ),
         ],
       ),
@@ -351,6 +463,162 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHardwareStatusCard() {
+    final List<Map<String, dynamic>> hardwareList = [
+      {
+        'name': 'ESP32-CAM',
+        'status': 'Online',
+        'icon': Icons.camera_alt,
+        'color': Colors.green,
+      },
+      {
+        'name': 'RFID Reader',
+        'status': 'Online',
+        'icon': Icons.credit_card,
+        'color': Colors.green,
+      },
+      {
+        'name': 'Firebase DB',
+        'status': 'Connected',
+        'icon': Icons.cloud_done,
+        'color': Colors.blue,
+      },
+    ];
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Devices',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Divider(),
+            ...hardwareList.map(
+              (hw) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Icon(hw['icon'], color: hw['color']),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        hw['name'],
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    Text(
+                      hw['status'],
+                      style: TextStyle(
+                        color: hw['color'],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTodaysClassesCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columns: const [
+            DataColumn(label: Text("Class")),
+            DataColumn(label: Text("Lecturer")),
+            DataColumn(label: Text("Time")),
+            DataColumn(label: Text("Room")),
+            DataColumn(label: Text("Enrolled")),
+            DataColumn(label: Text("Present")),
+            DataColumn(label: Text("Attendance")),
+            DataColumn(label: Text("Status")),
+          ],
+          rows: todaysClasses.map((cls) {
+            return DataRow(
+              cells: [
+                DataCell(Text("${cls['class']} (${cls['code']})")),
+                DataCell(Text(cls['lecturer'])),
+                DataCell(Text(cls['time'])),
+                DataCell(Text(cls['room'])),
+                DataCell(Text(cls['enrolled'].toString())),
+                DataCell(Text(cls['present'].toString())),
+                DataCell(
+                  Text(
+                    cls['attendance'] != null ? "${cls['attendance']}%" : "-",
+                  ),
+                ),
+                DataCell(
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cls['status'] == "Completed"
+                          ? Colors.green.shade100
+                          : cls['status'] == "In Progress"
+                              ? Colors.blue.shade100
+                              : Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      cls['status'],
+                      style: TextStyle(
+                        color: cls['status'] == "Completed"
+                            ? Colors.green
+                            : cls['status'] == "In Progress"
+                                ? Colors.blue
+                                : Colors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirm Logout"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Logout"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
