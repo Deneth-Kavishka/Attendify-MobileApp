@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import 'hardware_status_page.dart';
+import 'exam_eligibility_page.dart';
+import 'report_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -10,7 +13,6 @@ class AdminDashboardPage extends StatefulWidget {
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
-  // Placeholder data
   final int totalStudents = 350;
   final int studentsPresentToday = 210;
   final double attendanceCutoff = 75.0;
@@ -18,9 +20,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   int notificationCount = 3;
   String currentDateTime = "";
-  int _selectedIndex = 0; // For bottom nav
+  int _selectedIndex = 0;
 
-  // ✅ Sample today’s classes data
   final List<Map<String, dynamic>> todaysClasses = [
     {
       'class': 'Computer Science 101',
@@ -75,7 +76,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     });
   }
 
-  // ✅ Bottom nav tap handler
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -89,7 +89,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         _showSnack("Create New Class clicked");
         break;
       case 2:
-        _showSnack("Generate Report clicked");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ReportPage()),
+        );
         break;
       case 3:
         _showSnack("System Setting clicked");
@@ -98,170 +101,47 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirm Logout"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Logout"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: <Widget>[
-                  const DrawerHeader(
-                    decoration: BoxDecoration(color: Colors.deepPurple),
-                    child: Text(
-                      'Smart Attendance\nManagement System',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.dashboard,
-                    text: 'Dashboard',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.people,
-                    text: 'Students',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.person,
-                    text: 'Lecturers',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.class_,
-                    text: 'Classes',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.check_circle,
-                    text: 'Attendance',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.school,
-                    text: 'Exam Eligibility',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.memory,
-                    text: 'Hardware Status',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.bar_chart,
-                    text: 'Reports',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.settings,
-                    text: 'Settings',
-                    onTap: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                _showLogoutDialog();
-              },
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(context),
       body: Column(
         children: [
-          // ✅ Custom Top Navigation Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: const BoxDecoration(
-              color: Colors.deepPurple,
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Builder(
-                      builder: (context) => IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.white),
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Welcome, Administrator",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  currentDateTime,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                Row(
-                  children: [
-                    Stack(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.notifications,
-                              color: Colors.white),
-                          onPressed: () {
-                            setState(() {
-                              notificationCount = 0;
-                            });
-                          },
-                        ),
-                        if (notificationCount > 0)
-                          Positioned(
-                            right: 6,
-                            top: 6,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                notificationCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(width: 8),
-                    const CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.person, color: Colors.deepPurple),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // ✅ Dashboard Content
+          _buildTopNavBar(context),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
@@ -271,64 +151,84 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   children: [
                     const Text(
                       'Overview',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      children: [
-                        _buildDashboardCard(
-                          title: 'Total Students',
-                          value: totalStudents.toString(),
-                          icon: Icons.people,
-                          color: Colors.blue.shade300,
-                        ),
-                        _buildDashboardCard(
-                          title: 'Present Today',
-                          value: studentsPresentToday.toString(),
-                          icon: Icons.check_circle_outline,
-                          color: Colors.green.shade300,
-                        ),
-                        _buildDashboardCard(
-                          title: 'Exam Eligibility',
-                          value: '${currentEligibilityRate.toStringAsFixed(1)}%',
-                          icon: Icons.school,
-                          color: Colors.amber.shade300,
-                        ),
-                        _buildDashboardCard(
-                          title: 'Attendance Cutoff',
-                          value: '${attendanceCutoff.toStringAsFixed(0)}%',
-                          icon: Icons.percent,
-                          color: Colors.red.shade300,
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount = 2;
+                        if (screenWidth > 1200) {
+                          crossAxisCount = 4;
+                        } else if (screenWidth > 800) {
+                          crossAxisCount = 3;
+                        }
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.2,
+                          children: [
+                            _buildDashboardCard(
+                              title: 'Total Students',
+                              value: totalStudents.toString(),
+                              icon: Icons.people,
+                              color: Colors.blue.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Present Today',
+                              value: studentsPresentToday.toString(),
+                              icon: Icons.check_circle_outline,
+                              color: Colors.green.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Exam Eligibility',
+                              value:
+                                  '${currentEligibilityRate.toStringAsFixed(1)}%',
+                              icon: Icons.school,
+                              color: Colors.amber.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Attendance Cutoff',
+                              value: '${attendanceCutoff.toStringAsFixed(0)}%',
+                              icon: Icons.percent,
+                              color: Colors.red.shade300,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
                     const Text(
                       'Live Attendance Feed',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildLiveFeedCard(),
                     const SizedBox(height: 24),
                     const Text(
                       'Hardware Status',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildHardwareStatusCard(),
                     const SizedBox(height: 24),
                     const Text(
                       'Today’s Classes Overview',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildTodaysClassesCard(),
@@ -339,33 +239,210 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
         ],
       ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
 
-      // ✅ Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_add),
-            label: "Add Student",
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                const DrawerHeader(
+                  decoration: BoxDecoration(color: Colors.deepPurple),
+                  child: Text(
+                    'Smart Attendance\nManagement System',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.dashboard,
+                  text: 'Dashboard',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.people,
+                  text: 'Students',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.person,
+                  text: 'Lecturers',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.class_,
+                  text: 'Classes',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.check_circle,
+                  text: 'Attendance',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  icon: Icons.school,
+                  text: 'Exam Eligibility',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ExamEligibilityPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.memory,
+                  text: 'Hardware Status',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HardwareStatusPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                _buildDrawerItem(
+                  icon: Icons.bar_chart,
+                  text: 'Reports',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ReportPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.settings,
+                  text: 'Settings',
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.class_),
-            label: "New Class",
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+            onTap: () {
+              Navigator.pop(context);
+              _showLogoutDialog();
+            },
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "Report",
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopNavBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.deepPurple,
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Builder(
+                builder: (context) => IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "Welcome, Administrator",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
+          Flexible(
+            child: Text(
+              currentDateTime,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+          Row(
+            children: [
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications, color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        notificationCount = 0;
+                      });
+                    },
+                  ),
+                  if (notificationCount > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          notificationCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              const CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.deepPurple),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.deepPurple,
+      unselectedItemColor: Colors.grey,
+      onTap: _onItemTapped,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_add),
+          label: "Add Student",
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.class_), label: "New Class"),
+        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Report"),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+      ],
     );
   }
 
@@ -391,28 +468,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, size: 40, color: color),
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black54,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: color,
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
             ),
           ],
@@ -433,7 +508,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -448,7 +523,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(scan['name']!, style: const TextStyle(fontSize: 16)),
+                    Expanded(
+                      child: Text(
+                        scan['name']!,
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
                     Text(
                       scan['time']!,
                       style: const TextStyle(
@@ -492,7 +572,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -503,7 +583,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             const Divider(),
             ...hardwareList.map(
               (hw) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
                     Icon(hw['icon'], color: hw['color']),
@@ -548,77 +628,56 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             DataColumn(label: Text("Attendance")),
             DataColumn(label: Text("Status")),
           ],
-          rows: todaysClasses.map((cls) {
-            return DataRow(
-              cells: [
-                DataCell(Text("${cls['class']} (${cls['code']})")),
-                DataCell(Text(cls['lecturer'])),
-                DataCell(Text(cls['time'])),
-                DataCell(Text(cls['room'])),
-                DataCell(Text(cls['enrolled'].toString())),
-                DataCell(Text(cls['present'].toString())),
-                DataCell(
-                  Text(
-                    cls['attendance'] != null ? "${cls['attendance']}%" : "-",
-                  ),
-                ),
-                DataCell(
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: cls['status'] == "Completed"
-                          ? Colors.green.shade100
-                          : cls['status'] == "In Progress"
-                              ? Colors.blue.shade100
-                              : Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      cls['status'],
-                      style: TextStyle(
-                        color: cls['status'] == "Completed"
-                            ? Colors.green
-                            : cls['status'] == "In Progress"
-                                ? Colors.blue
-                                : Colors.orange,
-                        fontWeight: FontWeight.bold,
+          rows: todaysClasses
+              .map(
+                (cls) => DataRow(
+                  cells: [
+                    DataCell(Text("${cls['class']} (${cls['code']})")),
+                    DataCell(Text(cls['lecturer'])),
+                    DataCell(Text(cls['time'])),
+                    DataCell(Text(cls['room'])),
+                    DataCell(Text(cls['enrolled'].toString())),
+                    DataCell(Text(cls['present'].toString())),
+                    DataCell(
+                      Text(
+                        cls['attendance'] != null
+                            ? "${cls['attendance']}%"
+                            : "-",
                       ),
                     ),
-                  ),
+                    DataCell(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cls['status'] == "Completed"
+                              ? Colors.green.shade100
+                              : cls['status'] == "In Progress"
+                              ? Colors.blue.shade100
+                              : Colors.orange.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          cls['status'],
+                          style: TextStyle(
+                            color: cls['status'] == "Completed"
+                                ? Colors.green
+                                : cls['status'] == "In Progress"
+                                ? Colors.blue
+                                : Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            );
-          }).toList(),
+              )
+              .toList(),
         ),
       ),
-    );
-  }
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Confirm Logout"),
-          content: const Text("Are you sure you want to logout?"),
-          actions: [
-            TextButton(
-              child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text("Logout"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }
