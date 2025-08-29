@@ -4,6 +4,7 @@ import 'dart:async';
 import 'hardware_status_page.dart';
 import 'exam_eligibility_page.dart';
 import 'report_page.dart';
+import 'settings_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -95,7 +96,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         );
         break;
       case 3:
-        _showSnack("System Setting clicked");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsPage()),
+        );
         break;
     }
   }
@@ -247,17 +251,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     return Drawer(
       child: Column(
         children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.deepPurple),
+            child: Text(
+              'Smart Attendance\nManagement System',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          ),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
               children: <Widget>[
-                const DrawerHeader(
-                  decoration: BoxDecoration(color: Colors.deepPurple),
-                  child: Text(
-                    'Smart Attendance\nManagement System',
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                ),
                 _buildDrawerItem(
                   icon: Icons.dashboard,
                   text: 'Dashboard',
@@ -309,7 +313,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     );
                   },
                 ),
-
                 _buildDrawerItem(
                   icon: Icons.bar_chart,
                   text: 'Reports',
@@ -326,20 +329,30 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 _buildDrawerItem(
                   icon: Icons.settings,
                   text: 'Settings',
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showLogoutDialog();
+                  },
                 ),
               ],
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              Navigator.pop(context);
-              _showLogoutDialog();
-            },
-          ),
-          const SizedBox(height: 12),
         ],
       ),
     );
