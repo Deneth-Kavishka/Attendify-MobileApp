@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'admin_dashboard_page.dart'; // Import your dashboard page file
+
+
+import 'login_page.dart'; // import the login page
+
 
 void main() {
   runApp(const MyApp());
@@ -11,6 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+ dashboard-dev
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -36,11 +40,24 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _counter++;
     });
+  
+
+      debugShowCheckedModeBanner: false,
+      title: 'Attendance App',
+      theme: ThemeData(useMaterial3: true),
+      home: const HomePage(),
+    );
   }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+test_dev
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+ dashboard-dev
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
@@ -85,6 +102,20 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
+
+      appBar: AppBar(title: const Text("Home Page")),
+      body: Center(
+        child: ElevatedButton(
+          child: const Text("Go to Attendify Login"),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          },
+        ),
+      ),
+ test_dev
     );
   }
 }
