@@ -28,6 +28,43 @@ class _SettingsPageState extends State<SettingsPage>
   final List<String> _timezones = ["UTC", "GMT", "EST", "CST", "PST"];
   final List<String> _dateFormats = ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"];
 
+  // Hardware Configuration
+  String _selectedResolution = "VGA (640x480)";
+  final _frameRateController = TextEditingController(text: "10");
+  final _imageQualityController = TextEditingController(text: "10");
+  final _faceRecognitionThresholdController = TextEditingController(
+    text: "0.8",
+  );
+  bool _faceDetectionEnabled = true;
+  bool _autoRestartCamEnabled = false;
+
+  // RFID Settings
+  String _selectedReadRange = "Medium (3-7 cm)";
+  final _scanIntervalController = TextEditingController(text: "2");
+  final _duplicateCardDelayController = TextEditingController(text: "3");
+  String _selectedSignalStrength = "High";
+  bool _autoRestartRFIDEnabled = false;
+
+  final List<String> _readRanges = [
+    "Short (1-3 cm)",
+    "Medium (3-7 cm)",
+    "Long (7-15 cm)",
+  ];
+  final List<String> _signalStrengths = ["Low", "Medium", "High"];
+
+  // Network Settings
+  final _connectionTimeoutController = TextEditingController(text: "10");
+  final _retryAttemptsController = TextEditingController(text: "3");
+  bool _dataEncryptionEnabled = true;
+  bool _dataCompressionEnabled = true;
+
+  final List<String> _resolutions = [
+    "VGA (640x480)",
+    "SVGA (800x600)",
+    "XGA (1024x768)",
+    "UXGA (1600x1200)",
+  ];
+
   // ---------------- User Management Data ----------------
   final List<Map<String, dynamic>> _users = [
     {
@@ -65,12 +102,18 @@ class _SettingsPageState extends State<SettingsPage>
     _examEligibilityController.dispose();
     _sessionTimeoutController.dispose();
     _maxLoginAttemptsController.dispose();
+    _frameRateController.dispose();
+    _imageQualityController.dispose();
+    _faceRecognitionThresholdController.dispose();
+    _scanIntervalController.dispose();
+    _duplicateCardDelayController.dispose();
+    _connectionTimeoutController.dispose();
+    _retryAttemptsController.dispose();
     super.dispose();
   }
 
   // ---------------- Helpers ----------------
   String _formatDate(DateTime dt) {
-    // Simple M/D/YYYY (no intl dependency)
     return "${dt.month}/${dt.day}/${dt.year}";
   }
 
@@ -103,18 +146,38 @@ class _SettingsPageState extends State<SettingsPage>
     required String label,
     required TextEditingController controller,
     String? helper,
+    TextInputType keyboardType = TextInputType.number,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
         controller: controller,
-        keyboardType: TextInputType.number,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
           helperText: helper,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      value: value,
+      items: items.map((e) {
+        return DropdownMenuItem(value: e, child: Text(e));
+      }).toList(),
+      onChanged: onChanged,
     );
   }
 
@@ -133,6 +196,272 @@ class _SettingsPageState extends State<SettingsPage>
     );
   }
 
+  // ---------------- Hardware Tab ----------------
+  Widget _buildHardwareTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          _buildSubsectionCard(
+            title: "ESP32-CAM Settings",
+            icon: Icons.camera_alt,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdownField(
+                      label: "Camera Resolution",
+                      value: _selectedResolution,
+                      items: _resolutions,
+                      onChanged: (val) {
+                        setState(() => _selectedResolution = val!);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Frame Rate (FPS)",
+                      controller: _frameRateController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Image Quality (1-63, lower = better)",
+                      controller: _imageQualityController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Face Recognition Threshold",
+                      controller: _faceRecognitionThresholdController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              _buildSwitchTile(
+                title: "Face Detection",
+                subtitle: "Enable automatic face detection",
+                value: _faceDetectionEnabled,
+                onChanged: (val) {
+                  setState(() => _faceDetectionEnabled = val);
+                },
+              ),
+              _buildSwitchTile(
+                title: "Auto Restart",
+                subtitle: "Automatically restart on errors",
+                value: _autoRestartCamEnabled,
+                onChanged: (val) {
+                  setState(() => _autoRestartCamEnabled = val);
+                },
+              ),
+            ],
+          ),
+          _buildSubsectionCard(
+            title: "RFID Reader Settings",
+            icon: Icons.credit_card,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDropdownField(
+                      label: "Read Range",
+                      value: _selectedReadRange,
+                      items: _readRanges,
+                      onChanged: (val) {
+                        setState(() => _selectedReadRange = val!);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Scan Interval (seconds)",
+                      controller: _scanIntervalController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Duplicate Card Delay (seconds)",
+                      controller: _duplicateCardDelayController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildDropdownField(
+                      label: "Signal Strength",
+                      value: _selectedSignalStrength,
+                      items: _signalStrengths,
+                      onChanged: (val) {
+                        setState(() => _selectedSignalStrength = val!);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              _buildSwitchTile(
+                title: "Auto Restart",
+                subtitle: "Automatically restart on errors",
+                value: _autoRestartRFIDEnabled,
+                onChanged: (val) {
+                  setState(() => _autoRestartRFIDEnabled = val);
+                },
+              ),
+            ],
+          ),
+          _buildSubsectionCard(
+            title: "Network Settings",
+            icon: Icons.network_check,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Connection Timeout (seconds)",
+                      controller: _connectionTimeoutController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Retry Attempts",
+                      controller: _retryAttemptsController,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              _buildSwitchTile(
+                title: "Data Encryption",
+                subtitle: "Encrypt data transmission",
+                value: _dataEncryptionEnabled,
+                onChanged: (val) {
+                  setState(() => _dataEncryptionEnabled = val);
+                },
+              ),
+              _buildSwitchTile(
+                title: "Data Compression",
+                subtitle: "Compress transmitted data",
+                value: _dataCompressionEnabled,
+                onChanged: (val) {
+                  setState(() => _dataCompressionEnabled = val);
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedResolution = "VGA (640x480)";
+                    _frameRateController.text = "10";
+                    _imageQualityController.text = "10";
+                    _faceRecognitionThresholdController.text = "0.8";
+                    _faceDetectionEnabled = true;
+                    _autoRestartCamEnabled = false;
+
+                    _selectedReadRange = "Medium (3-7 cm)";
+                    _scanIntervalController.text = "2";
+                    _duplicateCardDelayController.text = "3";
+                    _selectedSignalStrength = "High";
+                    _autoRestartRFIDEnabled = true;
+
+                    _connectionTimeoutController.text = "10";
+                    _retryAttemptsController.text = "3";
+                    _dataEncryptionEnabled = true;
+                    _dataCompressionEnabled = true;
+                  });
+                },
+                child: const Text("Reset Changes"),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Hardware settings saved successfully"),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.save, color: Colors.white),
+                label: const Text(
+                  "Save & Update Hardware",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubsectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Colors.deepPurple),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
   // ---------------- Users Tab ----------------
   Widget _buildUsersTab() {
     int adminCount = _users.where((u) => u['role'] == 'Admin').length;
@@ -148,13 +477,15 @@ class _SettingsPageState extends State<SettingsPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("User Management",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                "User Management",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
               const Text("Manage user accounts, roles, and permissions"),
               const SizedBox(height: 12),
 
-              // Summary chips/cards responsive
+              // Summary
               if (isMobile)
                 Column(
                   children: [
@@ -175,7 +506,7 @@ class _SettingsPageState extends State<SettingsPage>
 
               const SizedBox(height: 12),
 
-              // Actions row
+              // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -201,7 +532,7 @@ class _SettingsPageState extends State<SettingsPage>
 
               const SizedBox(height: 12),
 
-              // Data table with both vertical & horizontal scroll
+              // Table
               Expanded(
                 child: Scrollbar(
                   child: SingleChildScrollView(
@@ -232,13 +563,19 @@ class _SettingsPageState extends State<SettingsPage>
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
-                                          Text(entry.value['name'],
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w600)),
-                                          Text(entry.value['email'],
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey)),
+                                          Text(
+                                            entry.value['name'],
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            entry.value['email'],
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -246,13 +583,16 @@ class _SettingsPageState extends State<SettingsPage>
                                     DataCell(
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: entry.value['status']
                                               ? Colors.green.shade100
                                               : Colors.red.shade100,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         child: Text(
                                           entry.value['status']
@@ -271,17 +611,23 @@ class _SettingsPageState extends State<SettingsPage>
                                       Row(
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.edit,
-                                                color: Colors.orange),
+                                            icon: const Icon(
+                                              Icons.edit,
+                                              color: Colors.orange,
+                                            ),
                                             onPressed: () =>
                                                 _openEditUser(entry.key),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete,
-                                                color: Colors.red),
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            ),
                                             onPressed: () {
-                                              setState(() =>
-                                                  _users.removeAt(entry.key));
+                                              setState(
+                                                () =>
+                                                    _users.removeAt(entry.key),
+                                              );
                                             },
                                           ),
                                         ],
@@ -311,7 +657,6 @@ class _SettingsPageState extends State<SettingsPage>
     );
 
     if (result != null) {
-      // Add lastLogin for new users (today)
       result['lastLogin'] = _formatDate(DateTime.now());
       setState(() => _users.add(result));
     }
@@ -325,7 +670,6 @@ class _SettingsPageState extends State<SettingsPage>
     );
 
     if (result != null) {
-      // Preserve lastLogin for edits
       result['lastLogin'] = existing['lastLogin'];
       setState(() => _users[index] = result);
     }
@@ -355,16 +699,131 @@ class _SettingsPageState extends State<SettingsPage>
     );
   }
 
+  // ---------------- Maintenance Tab ----------------
+  Widget _buildMaintenanceTab() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isMobile = constraints.maxWidth < 600;
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildSectionCard(
+                title: "Database Backup",
+                children: [
+                  const Text("Last backup: Yesterday at 3:00 AM"),
+                  const Text(
+                    "Automatic backups run daily at 3:00 AM",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                      ),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Backup created successfully"),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Create Backup Now",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              _buildSectionCard(
+                title: "System Maintenance",
+                children: [
+                  ListTile(
+                    title: const Text("Clean System Logs"),
+                    subtitle: const Text(
+                      "Remove old log files and free up space",
+                    ),
+                    trailing: OutlinedButton(
+                      child: const Text("Clean Logs"),
+                      onPressed: () {},
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text("Optimize Database"),
+                    subtitle: const Text(
+                      "Optimize database tables and indexes",
+                    ),
+                    trailing: OutlinedButton(
+                      child: const Text("Optimize Now"),
+                      onPressed: () {},
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text("System Health Check"),
+                    subtitle: const Text("Run comprehensive diagnostics"),
+                    trailing: OutlinedButton(
+                      child: const Text("Run Diagnostics"),
+                      onPressed: () {},
+                    ),
+                  ),
+                ],
+              ),
+              _buildSectionCard(
+                title: "System Information",
+                children: [
+                  _infoRow("System Version", "SmartTrack v2.1.0", isMobile),
+                  _infoRow("Uptime", "7 days, 14 hours", isMobile),
+                  _infoRow("Database Size", "45.7 MB", isMobile),
+                  _infoRow("Connected Devices", "8 devices online", isMobile),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _infoRow(String key, String value, bool isMobile) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(key, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(value, style: const TextStyle(color: Colors.grey)),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(key, style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(value, style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+    );
+  }
+
   // ---------------- Main Build ----------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("System Settings"),
+        title: const Text(
+          "System Settings",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.deepPurple,
+        iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.7),
           tabs: const [
             Tab(text: "System"),
             Tab(text: "Hardware"),
@@ -448,22 +907,10 @@ class _SettingsPageState extends State<SettingsPage>
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
+                          child: _buildDropdownField(
+                            label: "Timezone",
                             value: _selectedTimezone,
-                            decoration: InputDecoration(
-                              labelText: "Timezone",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            items: _timezones
-                                .map(
-                                  (tz) => DropdownMenuItem(
-                                    value: tz,
-                                    child: Text(tz),
-                                  ),
-                                )
-                                .toList(),
+                            items: _timezones,
                             onChanged: (val) {
                               setState(() => _selectedTimezone = val!);
                             },
@@ -471,22 +918,10 @@ class _SettingsPageState extends State<SettingsPage>
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
+                          child: _buildDropdownField(
+                            label: "Date Format",
                             value: _selectedDateFormat,
-                            decoration: InputDecoration(
-                              labelText: "Date Format",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            items: _dateFormats
-                                .map(
-                                  (fmt) => DropdownMenuItem(
-                                    value: fmt,
-                                    child: Text(fmt),
-                                  ),
-                                )
-                                .toList(),
+                            items: _dateFormats,
                             onChanged: (val) {
                               setState(() => _selectedDateFormat = val!);
                             },
@@ -549,23 +984,13 @@ class _SettingsPageState extends State<SettingsPage>
           ),
 
           // ---------------- Hardware Tab ----------------
-          const Center(
-            child: Text(
-              "Hardware settings coming soon...",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ),
+          _buildHardwareTab(),
 
           // ---------------- Users Tab ----------------
           _buildUsersTab(),
 
           // ---------------- Maintenance Tab ----------------
-          const Center(
-            child: Text(
-              "Maintenance settings coming soon...",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ),
+          _buildMaintenanceTab(),
         ],
       ),
     );
@@ -605,8 +1030,6 @@ class _UserDialogState extends State<_UserDialog> {
     _emailController.dispose();
     super.dispose();
   }
-
-  String _formatDate(DateTime dt) => "${dt.month}/${dt.day}/${dt.year}";
 
   @override
   Widget build(BuildContext context) {
@@ -652,21 +1075,27 @@ class _UserDialogState extends State<_UserDialog> {
                   value: _role,
                   items: const [
                     DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-                    DropdownMenuItem(value: 'Lecturer', child: Text('Lecturer')),
+                    DropdownMenuItem(
+                      value: 'Lecturer',
+                      child: Text('Lecturer'),
+                    ),
                     DropdownMenuItem(value: 'Student', child: Text('Student')),
                   ],
-                  onChanged: (v) => setState(() => _role = v ?? 'Student'),
                   decoration: const InputDecoration(
                     labelText: "Role",
                     border: OutlineInputBorder(),
                   ),
+                  onChanged: (val) {
+                    setState(() => _role = val!);
+                  },
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text("Active"),
+                  title: const Text("Active Status"),
                   value: _status,
-                  onChanged: (v) => setState(() => _status = v),
+                  onChanged: (val) {
+                    setState(() => _status = val);
+                  },
                 ),
               ],
             ),
@@ -675,27 +1104,21 @@ class _UserDialogState extends State<_UserDialog> {
       ),
       actions: [
         TextButton(
-          child: const Text("Cancel"),
           onPressed: () => Navigator.of(context).pop(),
+          child: const Text("Cancel"),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
-          child: Text(widget.existing == null ? "Save" : "Update"),
           onPressed: () {
-            if (_formKey.currentState?.validate() != true) return;
-
-            final map = <String, dynamic>{
-              'name': _nameController.text.trim(),
-              'email': _emailController.text.trim(),
-              'role': _role,
-              'status': _status,
-              // If adding, set now; if editing, keep original (caller may overwrite)
-              'lastLogin': widget.existing?['lastLogin'] ??
-                  _formatDate(DateTime.now()),
-            };
-
-            Navigator.of(context).pop(map);
+            if (_formKey.currentState!.validate()) {
+              Navigator.of(context).pop({
+                'name': _nameController.text.trim(),
+                'email': _emailController.text.trim(),
+                'role': _role,
+                'status': _status,
+              });
+            }
           },
+          child: Text(widget.existing == null ? "Add User" : "Save Changes"),
         ),
       ],
     );

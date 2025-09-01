@@ -14,9 +14,19 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
   final List<Map<String, dynamic>> students = [
     {"id": "S001", "name": "John Doe", "attendance": 82.0, "class": "CS101"},
     {"id": "S002", "name": "Jane Smith", "attendance": 68.0, "class": "CS101"},
-    {"id": "S003", "name": "Peter Johnson", "attendance": 91.0, "class": "MATH201"},
+    {
+      "id": "S003",
+      "name": "Peter Johnson",
+      "attendance": 91.0,
+      "class": "MATH201",
+    },
     {"id": "S004", "name": "Sarah Lee", "attendance": 72.0, "class": "PHY301"},
-    {"id": "S005", "name": "Michael Chen", "attendance": 76.0, "class": "MATH201"},
+    {
+      "id": "S005",
+      "name": "Michael Chen",
+      "attendance": 76.0,
+      "class": "MATH201",
+    },
   ];
 
   String selectedClass = "All Classes";
@@ -32,20 +42,28 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
       double att = student["attendance"];
       bool eligible = att >= attendanceCutoff;
 
-      if (selectedClass != "All Classes" && student["class"] != selectedClass) return false;
+      if (selectedClass != "All Classes" && student["class"] != selectedClass)
+        return false;
       if (eligibilityFilter == "Eligible" && !eligible) return false;
       if (eligibilityFilter == "Not Eligible" && eligible) return false;
       if (searchQuery.isNotEmpty &&
           !student["name"].toLowerCase().contains(searchQuery.toLowerCase()) &&
-          !student["id"].toLowerCase().contains(searchQuery.toLowerCase())) return false;
+          !student["id"].toLowerCase().contains(searchQuery.toLowerCase()))
+        return false;
 
       return true;
     }).toList();
 
     // ✅ Stats
-    int eligibleCount = students.where((s) => s["attendance"] >= attendanceCutoff).length;
-    int riskCount = students.where((s) => s["attendance"] < attendanceCutoff).length;
-    double avgAttendance = students.map((s) => s["attendance"]).reduce((a, b) => a + b) / students.length;
+    int eligibleCount = students
+        .where((s) => s["attendance"] >= attendanceCutoff)
+        .length;
+    int riskCount = students
+        .where((s) => s["attendance"] < attendanceCutoff)
+        .length;
+    double avgAttendance =
+        students.map((s) => s["attendance"]).reduce((a, b) => a + b) /
+        students.length;
     int activeClasses = students.map((s) => s["class"]).toSet().length;
 
     return Scaffold(
@@ -62,21 +80,69 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
             isWide
                 ? Row(
                     children: [
-                      Expanded(child: _buildStatCard("Exam Eligible", "$eligibleCount", "≥75% attendance", Colors.green)),
+                      Expanded(
+                        child: _buildStatCard(
+                          "Exam Eligible",
+                          "$eligibleCount",
+                          "≥75% attendance",
+                          Colors.green,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Expanded(child: _buildStatCard("At Risk", "$riskCount", "<75% attendance", Colors.red)),
+                      Expanded(
+                        child: _buildStatCard(
+                          "At Risk",
+                          "$riskCount",
+                          "<75% attendance",
+                          Colors.red,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Expanded(child: _buildStatCard("Average Attendance", "${avgAttendance.toStringAsFixed(1)}%", "All students", Colors.blue)),
+                      Expanded(
+                        child: _buildStatCard(
+                          "Average Attendance",
+                          "${avgAttendance.toStringAsFixed(1)}%",
+                          "All students",
+                          Colors.blue,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Expanded(child: _buildStatCard("Active Classes", "$activeClasses", "Being monitored", Colors.purple)),
+                      Expanded(
+                        child: _buildStatCard(
+                          "Active Classes",
+                          "$activeClasses",
+                          "Being monitored",
+                          Colors.purple,
+                        ),
+                      ),
                     ],
                   )
                 : Column(
                     children: [
-                      _buildStatCard("Exam Eligible", "$eligibleCount", "≥75% attendance", Colors.green),
-                      _buildStatCard("At Risk", "$riskCount", "<75% attendance", Colors.red),
-                      _buildStatCard("Average Attendance", "${avgAttendance.toStringAsFixed(1)}%", "All students", Colors.blue),
-                      _buildStatCard("Active Classes", "$activeClasses", "Being monitored", Colors.purple),
+                      _buildStatCard(
+                        "Exam Eligible",
+                        "$eligibleCount",
+                        "≥75% attendance",
+                        Colors.green,
+                      ),
+                      _buildStatCard(
+                        "At Risk",
+                        "$riskCount",
+                        "<75% attendance",
+                        Colors.red,
+                      ),
+                      _buildStatCard(
+                        "Average Attendance",
+                        "${avgAttendance.toStringAsFixed(1)}%",
+                        "All students",
+                        Colors.blue,
+                      ),
+                      _buildStatCard(
+                        "Active Classes",
+                        "$activeClasses",
+                        "Being monitored",
+                        Colors.purple,
+                      ),
                     ],
                   ),
             const SizedBox(height: 20),
@@ -122,20 +188,35 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
                             return DataRow(
                               cells: [
                                 DataCell(Text(student["id"])),
-                                DataCell(SizedBox(width: 150, child: Text(student["name"], overflow: TextOverflow.ellipsis))),
+                                DataCell(
+                                  SizedBox(
+                                    width: 150,
+                                    child: Text(
+                                      student["name"],
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
                                 DataCell(Text(student["class"])),
                                 DataCell(Text("${att.toStringAsFixed(1)}%")),
                                 DataCell(
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: eligible ? Colors.green.shade100 : Colors.red.shade100,
+                                      color: eligible
+                                          ? Colors.green.shade100
+                                          : Colors.red.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       eligible ? "Eligible" : "Not Eligible",
                                       style: TextStyle(
-                                        color: eligible ? Colors.green : Colors.red,
+                                        color: eligible
+                                            ? Colors.green
+                                            : Colors.red,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -156,11 +237,18 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
                         margin: const EdgeInsets.symmetric(vertical: 6),
                         child: ListTile(
                           title: Text(student["name"]),
-                          subtitle: Text("ID: ${student["id"]} • Class: ${student["class"]} • Attendance: ${att.toStringAsFixed(1)}%"),
+                          subtitle: Text(
+                            "ID: ${student["id"]} • Class: ${student["class"]} • Attendance: ${att.toStringAsFixed(1)}%",
+                          ),
                           trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: eligible ? Colors.green.shade100 : Colors.red.shade100,
+                              color: eligible
+                                  ? Colors.green.shade100
+                                  : Colors.red.shade100,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -187,27 +275,48 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Filters & Search", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Filters & Search",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: selectedClass,
             isExpanded: true,
-            items: ["All Classes", "CS101", "MATH201", "PHY301"].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            items: [
+              "All Classes",
+              "CS101",
+              "MATH201",
+              "PHY301",
+            ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
             onChanged: (val) => setState(() => selectedClass = val!),
-            decoration: const InputDecoration(labelText: "Select Class", border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+              labelText: "Select Class",
+              border: OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(labelText: "Search Students", border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+              labelText: "Search Students",
+              border: OutlineInputBorder(),
+            ),
             onChanged: (val) => setState(() => searchQuery = val),
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: eligibilityFilter,
             isExpanded: true,
-            items: ["All Students", "Eligible", "Not Eligible"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+            items: [
+              "All Students",
+              "Eligible",
+              "Not Eligible",
+            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: (val) => setState(() => eligibilityFilter = val!),
-            decoration: const InputDecoration(labelText: "Eligibility Filter", border: OutlineInputBorder()),
+            decoration: const InputDecoration(
+              labelText: "Eligibility Filter",
+              border: OutlineInputBorder(),
+            ),
           ),
         ],
       ),
@@ -220,12 +329,20 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Bulk Eligibility Check", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Bulk Eligibility Check",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: "Choose a class",
             isExpanded: true,
-            items: ["Choose a class", "CS101", "MATH201", "PHY301"].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            items: [
+              "Choose a class",
+              "CS101",
+              "MATH201",
+              "PHY301",
+            ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
             onChanged: (_) {},
             decoration: const InputDecoration(border: OutlineInputBorder()),
           ),
@@ -233,7 +350,9 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
           ElevatedButton.icon(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Bulk eligibility check running...")),
+                const SnackBar(
+                  content: Text("Bulk eligibility check running..."),
+                ),
               );
             },
             icon: const Icon(Icons.check_circle),
@@ -242,14 +361,19 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
               backgroundColor: Colors.deepPurple,
               minimumSize: const Size(double.infinity, 45),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   // ✅ Stat Card
-  Widget _buildStatCard(String title, String value, String subtitle, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    String subtitle,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -258,11 +382,26 @@ class _ExamEligibilityPageState extends State<ExamEligibilityPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 6),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 13), textAlign: TextAlign.center),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.black54, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),

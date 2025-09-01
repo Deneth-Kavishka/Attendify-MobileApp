@@ -1,3 +1,5 @@
+import 'package:attendify/add_new_student_page.dart';
+import 'package:attendify/new_class_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -18,6 +20,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   final int studentsPresentToday = 210;
   final double attendanceCutoff = 75.0;
   final double currentEligibilityRate = 78.5;
+
+  final int activeClasses = 15;
+  final double avgAttendanceThisWeek = 85.0;
+  final int scheduledClassesToday = 5;
+  final int unreadAlerts = 3;
 
   int notificationCount = 3;
   String currentDateTime = "";
@@ -84,10 +91,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
     switch (index) {
       case 0:
-        _showSnack("Add New Student clicked");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddNewStudentPage()),
+        );
         break;
       case 1:
-        _showSnack("Create New Class clicked");
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const NewClassPage()),
+        );
         break;
       case 2:
         Navigator.push(
@@ -202,38 +215,41 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               icon: Icons.percent,
                               color: Colors.red.shade300,
                             ),
+                            _buildDashboardCard(
+                              title: 'Active Classes',
+                              value: activeClasses.toString(),
+                              icon: Icons.class_outlined,
+                              color: Colors.cyan.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Avg. Weekly Attendance',
+                              value:
+                                  '${avgAttendanceThisWeek.toStringAsFixed(1)}%',
+                              icon: Icons.show_chart,
+                              color: Colors.purple.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Classes Scheduled',
+                              value: scheduledClassesToday.toString(),
+                              icon: Icons.schedule,
+                              color: Colors.orange.shade300,
+                            ),
+                            _buildDashboardCard(
+                              title: 'Unread Alerts',
+                              value: unreadAlerts.toString(),
+                              icon: Icons.warning_amber,
+                              color: Colors.deepOrange.shade300,
+                            ),
                           ],
                         );
                       },
                     ),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Live Attendance Feed',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    _buildSectionHeader('Live Attendance Feed'),
                     const SizedBox(height: 16),
                     _buildLiveFeedCard(),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Hardware Status',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildHardwareStatusCard(),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Today’s Classes Overview',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    _buildSectionHeader('Today’s Classes Overview'),
                     const SizedBox(height: 16),
                     _buildTodaysClassesCard(),
                   ],
@@ -296,19 +312,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const ExamEligibilityPage(),
-                      ),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.memory,
-                  text: 'Hardware Status',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HardwareStatusPage(),
                       ),
                     );
                   },
@@ -559,71 +562,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  Widget _buildHardwareStatusCard() {
-    final List<Map<String, dynamic>> hardwareList = [
-      {
-        'name': 'ESP32-CAM',
-        'status': 'Online',
-        'icon': Icons.camera_alt,
-        'color': Colors.green,
-      },
-      {
-        'name': 'RFID Reader',
-        'status': 'Online',
-        'icon': Icons.credit_card,
-        'color': Colors.green,
-      },
-      {
-        'name': 'Firebase DB',
-        'status': 'Connected',
-        'icon': Icons.cloud_done,
-        'color': Colors.blue,
-      },
-    ];
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Devices',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const Divider(),
-            ...hardwareList.map(
-              (hw) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Icon(hw['icon'], color: hw['color']),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        hw['name'],
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    Text(
-                      hw['status'],
-                      style: TextStyle(
-                        color: hw['color'],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTodaysClassesCard() {
     return Card(
       elevation: 4,
@@ -668,8 +606,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           color: cls['status'] == "Completed"
                               ? Colors.green.shade100
                               : cls['status'] == "In Progress"
-                              ? Colors.blue.shade100
-                              : Colors.orange.shade100,
+                                  ? Colors.blue.shade100
+                                  : Colors.orange.shade100,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -678,8 +616,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             color: cls['status'] == "Completed"
                                 ? Colors.green
                                 : cls['status'] == "In Progress"
-                                ? Colors.blue
-                                : Colors.orange,
+                                    ? Colors.blue
+                                    : Colors.orange,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -690,6 +628,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               )
               .toList(),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
